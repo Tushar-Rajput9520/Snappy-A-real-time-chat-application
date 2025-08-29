@@ -1,3 +1,4 @@
+import RobotGif from "../assets/download.jpeg";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import styled from "styled-components";
@@ -16,6 +17,7 @@ export default function Register() {
     draggable: true,
     theme: "dark",
   };
+
   const [values, setValues] = useState({
     username: "",
     email: "",
@@ -27,7 +29,7 @@ export default function Register() {
     if (localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY)) {
       navigate("/");
     }
-  }, []);
+  }, [navigate]);
 
   const handleChange = (event) => {
     setValues({ ...values, [event.target.name]: event.target.value });
@@ -53,11 +55,10 @@ export default function Register() {
         toastOptions
       );
       return false;
-    } else if (email === "") {
+    } else if (!email) {
       toast.error("Email is required.", toastOptions);
       return false;
     }
-
     return true;
   };
 
@@ -65,21 +66,23 @@ export default function Register() {
     event.preventDefault();
     if (handleValidation()) {
       const { email, username, password } = values;
-      const { data } = await axios.post(registerRoute, {
-        username,
-        email,
-        password,
-      });
-
-      if (data.status === false) {
-        toast.error(data.msg, toastOptions);
-      }
-      if (data.status === true) {
-        localStorage.setItem(
-          process.env.REACT_APP_LOCALHOST_KEY,
-          JSON.stringify(data.user)
-        );
-        navigate("/");
+      try {
+        const { data } = await axios.post(registerRoute, {
+          username,
+          email,
+          password,
+        });
+        if (!data.status) {
+          toast.error(data.msg, toastOptions);
+        } else {
+          localStorage.setItem(
+            process.env.REACT_APP_LOCALHOST_KEY,
+            JSON.stringify(data.user)
+          );
+          navigate("/");
+        }
+      } catch (err) {
+        toast.error("Something went wrong. Please try again.", toastOptions);
       }
     }
   };
@@ -87,38 +90,38 @@ export default function Register() {
   return (
     <>
       <FormContainer>
-        <form action="" onSubmit={(event) => handleSubmit(event)}>
+        <form onSubmit={handleSubmit}>
           <div className="brand">
             <img src={Logo} alt="logo" />
-            <h1>snappy</h1>
+            <h1>Snappy</h1>
           </div>
           <input
             type="text"
             placeholder="Username"
             name="username"
-            onChange={(e) => handleChange(e)}
+            onChange={handleChange}
           />
           <input
             type="email"
             placeholder="Email"
             name="email"
-            onChange={(e) => handleChange(e)}
+            onChange={handleChange}
           />
           <input
             type="password"
             placeholder="Password"
             name="password"
-            onChange={(e) => handleChange(e)}
+            onChange={handleChange}
           />
           <input
             type="password"
             placeholder="Confirm Password"
-            name="confirmPassword"
-            onChange={(e) => handleChange(e)}
+            name="confirmPassword" // ✅ fixed
+            onChange={handleChange}
           />
           <button type="submit">Create User</button>
           <span>
-            Already have an account ? <Link to="/login">Login.</Link>
+            Already have an account? <Link to="/login">Login</Link>
           </span>
         </form>
       </FormContainer>
@@ -135,12 +138,26 @@ const FormContainer = styled.div`
   justify-content: center;
   gap: 1rem;
   align-items: center;
-  background-color: #131324;
+  background: url(${RobotGif}) no-repeat center center/cover;
+  position: relative;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(19, 19, 36, 0.7);
+    z-index: 0;
+  }
+
   .brand {
     display: flex;
     align-items: center;
     gap: 1rem;
     justify-content: center;
+    z-index: 1;
     img {
       height: 5rem;
     }
@@ -154,10 +171,14 @@ const FormContainer = styled.div`
     display: flex;
     flex-direction: column;
     gap: 2rem;
-    background-color: #00000076;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(10px);
     border-radius: 2rem;
     padding: 3rem 5rem;
+    z-index: 1;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
   }
+
   input {
     background-color: transparent;
     padding: 1rem;
@@ -171,6 +192,7 @@ const FormContainer = styled.div`
       outline: none;
     }
   }
+
   button {
     background-color: #4e0eff;
     color: white;
@@ -181,13 +203,17 @@ const FormContainer = styled.div`
     border-radius: 0.4rem;
     font-size: 1rem;
     text-transform: uppercase;
+    transition: 0.3s ease-in-out;
     &:hover {
-      background-color: #4e0eff;
+      background-color: #6a34f0;
+      transform: scale(1.05);
     }
   }
+
   span {
     color: white;
     text-transform: uppercase;
+    z-index: 1;
     a {
       color: #4e0eff;
       text-decoration: none;
